@@ -1,0 +1,5 @@
+build/
+.vscode/
+models/
+.DS_Store
+example-scenes/
