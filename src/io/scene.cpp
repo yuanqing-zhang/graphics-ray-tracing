@@ -2,6 +2,8 @@
 #include <fstream>
 #include <sstream>
 
+using namespace Eigen;
+using namespace std;
 
 bool is_line_valid(const string &line) {
 	return (line.empty() || line[0] == 13 || line[0] == '#');
