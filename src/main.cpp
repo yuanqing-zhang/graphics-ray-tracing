@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <ctime>
 
 #include "utils/ray.h"
 #include "io/scene.h"
@@ -75,7 +76,9 @@ int main(int argc, char* argv[])
     Vector3f* image;
     if(scene_name == "cornellbox")
     {
+        clock_t start = clock();
         image = ray_tracing(scene, box_cfg);
+        cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC << endl;
         save_image(image, scene_name, box_cfg);
     }
 
