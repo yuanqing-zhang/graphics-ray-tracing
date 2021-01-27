@@ -1,9 +1,11 @@
 #include <iostream>
 #include <fstream>
 
+#include "utils/ray.h"
 #include "io/scene.h"
-#include "raytracer/cfg.h"
-#include "raytracer/utils.h"
+#include "utils/cfg.h"
+#include "utils/utils.h"
+
 #include "raytracer/raytracer.h"
 
 #include "Eigen/Dense"
@@ -42,6 +44,7 @@ Vector3f* ray_tracing(scene &scene, renderCfg cfg)
                         trace_color += ray_tracing(scene, 
                                                    ray, 
                                                    0, 
+                                                   cfg.depth,
                                                    seed) * (1.0 / cfg.samples);
                     }
                     // average colors in subpixels

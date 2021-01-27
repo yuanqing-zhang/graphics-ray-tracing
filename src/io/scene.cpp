@@ -5,6 +5,7 @@
 using namespace Eigen;
 using namespace std;
 
+
 bool is_line_valid(const string &line) {
 	return (line.empty() || line[0] == 13 || line[0] == '#');
 }
@@ -104,26 +105,19 @@ void scene::load_scene(const string &scene_name)
         }
         else if(type == "v" || type == "V") 
         {
-            // create new object while reading first v
-            if(is_new_obj == true)
-            {
-                all_objs.push_back(obj());
-                is_new_obj = false;
-                obj_index += 1;
-            }
             instream >> v1 >> v2 >> v3;
-            all_objs[obj_index].v_mat.push_back(Vector3f(v1, v2, v3));
+            v_mat.push_back(Vector3f(v1, v2, v3));
         }
         else if(type == "vn" || type == "VN") 
         {
             instream >> v1 >> v2 >> v3;
-            all_objs[obj_index].vn_mat.push_back(Vector3f(v1, v2, v3));
+            vn_mat.push_back(Vector3f(v1, v2, v3));
 
         }
         else if(type == "vt" || type == "VT") 
         {
             instream >> v1 >> v2;
-            all_objs[obj_index].vt_mat.push_back(Vector2f(v1, v2));
+            vt_mat.push_back(Vector2f(v1, v2));
         }
         else if(type == "g" || type == "G") 
         {
@@ -131,6 +125,13 @@ void scene::load_scene(const string &scene_name)
         }
         else if(type == "usemtl" || type == "USEMTL") 
         {
+            // create new object while reading first f
+            if(is_new_obj == true)
+            {
+                all_objs.push_back(obj());
+                is_new_obj = false;
+                obj_index += 1;
+            }
             instream >> all_objs[obj_index].mat_name;
         }
         else if(type == "f" || type == "F")
@@ -148,7 +149,6 @@ void scene::load_scene(const string &scene_name)
 				unsigned long v_id;
 				sscanf(v_str.c_str(), "%lu", &v_id);
                 fv(i) = v_id - 1; // obj file index start from 1
-				// cout << v_id << "/";
 
 				// get vertex normal index if exist
 				string vn_str = f_group.substr(f_group.find('/') + 1, f_group.rfind('/'));
@@ -156,7 +156,6 @@ void scene::load_scene(const string &scene_name)
 				unsigned long vn_id;
 				sscanf(vn_str.c_str(), "%lu", &vn_id);
 				fn(i) = vn_id - 1;
-				// cout << vn_id << "/";
 
                 // get texture coordinate if exist
                 string vt_str = f_group.substr(f_group.rfind('/') + 1, f_group.length());
@@ -164,11 +163,14 @@ void scene::load_scene(const string &scene_name)
                 unsigned long vt_id;
                 sscanf(vt_str.c_str(), "%lu", &vt_id);
                 ft(i) = vt_id - 1;
-                // cout << vt_id << endl;
 			}
             all_objs[obj_index].fv_set.push_back(fv);
             all_objs[obj_index].fn_set.push_back(fn);
             all_objs[obj_index].ft_set.push_back(ft);
+            
+            Vector3f normal = (vn_mat[fn(0)] + vn_mat[fn(1)] + vn_mat[fn(2)]) / 3;
+            normal.normalize();
+            all_objs[obj_index].f_normal.push_back(normal);
 
         }        
         else
@@ -181,5 +183,30 @@ void scene::load_scene(const string &scene_name)
         type.clear();
     }
     f.close();
+
+    // calulate AABB for all objects
+    for(int i = 0; i < all_objs.size(); i++)
+    {
+        for(int axis = 0; axis < 3; axis++)
+        {
+            float min = 10000, max = -10000;
+            for(int f = 0; f < all_objs[i].fv_set.size(); f++)
+            {
+                Vector3i curr_f = all_objs[i].fv_set[f];
+                for(int v = 0; v < 3; v++)
+                {
+                    if(v_mat[curr_f[v]](axis) < min)
+                        min = v_mat[curr_f[v]](axis);
+                    if(v_mat[curr_f[v]](axis) > max)
+                        max = v_mat[curr_f[v]](axis);
+                }
+            }
+            all_objs[i].bbox.bbox_min(axis) = min;
+            all_objs[i].bbox.bbox_max(axis) = max;
+        }
+    }
     
+    cout << "[LOG] Total vertice: " << v_mat.size() 
+            << ", total objects:  " << all_objs.size() << endl;
 }
+
