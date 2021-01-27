@@ -24,7 +24,7 @@ void save_image(Eigen::Vector3f* image, const std::string &scene_name, renderCfg
           << to_int(image[i](2)) << std::endl;
 
     f.close();
-    std::cout << "[LOG]Save render result in " << save_path << std::endl;
+    std::cout << "[LOG] Save render result in " << save_path << std::endl;
 };
 
 

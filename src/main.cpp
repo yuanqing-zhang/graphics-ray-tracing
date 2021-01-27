@@ -18,13 +18,13 @@ Vector3f* ray_tracing(scene &scene, renderCfg cfg)
 
     for (int h = 0; h < cfg.height; h++)
     {
-        fprintf(stderr, "\rRendering (%d spp) %5.2f%%", 
+        fprintf(stderr, "\r[LOG] Rendering (%d spp) %5.2f%%", 
                 cfg.samples * 4, 100. * h / (cfg.height - 1));
         
         for(int w = 0; w < cfg.width; w++)
         {
             for(int sh = 0; sh < cfg.subpixel; sh++)     // subpixel rows
-                for(int sw = 0; sw < cfg.subpixel; sw++) //subpixel cols
+                for(int sw = 0; sw < cfg.subpixel; sw++) // subpixel cols
                 {
                     Vector3f trace_color(0, 0, 0);
                     for(int s = 0; s < cfg.samples; s++)
@@ -49,7 +49,7 @@ Vector3f* ray_tracing(scene &scene, renderCfg cfg)
                 }
         }
     }
-
+    cout << endl;
     return image;
 }
 
@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
     
     scene scene;
     scene.load_scene(scene_name);
-    cout << "[LOG]Finish load sence." << endl;
+    cout << "[LOG] Finish load sence." << endl;
 
     Vector3f* image;
     if(scene_name == "cornellbox")

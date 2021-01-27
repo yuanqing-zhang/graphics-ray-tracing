@@ -1,8 +1,10 @@
 #ifndef __CFG_H__
 #define __CFG_H__
 
+#include <iostream>
 #include <Eigen/Dense>
 
+#define pi 3.1415926
 
 class ray
 {
@@ -10,6 +12,7 @@ public:
     Eigen::Vector3f o;
     Eigen::Vector3f d;
     ray(Eigen::Vector3f _o, Eigen::Vector3f _d):o(_o), d(_d){};
+    Eigen::Vector3f at(float t){return o + t * d; };
 };
 
 
@@ -33,21 +36,25 @@ public:
                 int f, int w, int h, int s, int d, int subp):
                 position(pos), width(w), height(h), samples(s), depth(d), subpixel(subp)
     {
-        // direction = look_at - pos;
         direction = look_at;
         direction.normalize();
+        up.normalize();
 
         float z = 1.0;
-        float real_w = z * tan(f);
-        cx = direction.cross(up) * real_w;
-        cy = cx.cross(direction) * real_w;
+        float real_w = z * tan(f * 1.0 / 180 * pi);
+        cx = direction.cross(up);
+        cy = cx.cross(direction);
+        
+        cx.normalize(); cy.normalize();
+        cx = cx * real_w;
+        cy = cy * real_w;
     };
 
 };
 
 renderCfg box_cfg = renderCfg(
     Eigen::Vector3f(0, 0, 2.5),
-    Eigen::Vector3f(0, 0, 0),
+    Eigen::Vector3f(0, 0, -1),
     Eigen::Vector3f(0, 1, 0),
     60,
     128,
