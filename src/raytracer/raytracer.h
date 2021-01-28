@@ -6,9 +6,7 @@
 
 
 Eigen::Vector3f ray_tracing(scene &scene,
-                            ray &ray,
-                            int depth,
-                            const int max_depth,
-                            unsigned short *seed);
+                            Ray &ray,
+                            int depth);
 
 #endif

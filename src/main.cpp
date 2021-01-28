@@ -33,20 +33,17 @@ Vector3f* ray_tracing(scene &scene, renderCfg cfg)
                     for(int s = 0; s < cfg.samples; s++)
                     {
                         // rand sample in [-1, 1]
-                        unsigned short seed[3]={0, 0, (unsigned short)(h * h * h)};
-                        double dx= tent_filter(2 * erand48(seed)); 
-                        double dy = tent_filter(2 * erand48(seed));
+                        double dx= tent_filter(2 * rand_()); 
+                        double dy = tent_filter(2 * rand_());
 
                         Vector3f vec_dx = cfg.cx * (((sw + 0.5 + dx) / cfg.subpixel + w) / cfg.width - 0.5);
                         Vector3f vec_dy = cfg.cy * (((sh + 0.5 + dy) / cfg.subpixel + h) / cfg.height - 0.5);
                         Vector3f d = cfg.direction + vec_dx + vec_dy;
 
-                        ray ray(cfg.position, d);
+                        Ray ray(cfg.position, d);
                         trace_color += ray_tracing(scene, 
                                                    ray, 
-                                                   0, 
-                                                   cfg.depth,
-                                                   seed) * (1.0 / cfg.samples);
+                                                   cfg.depth) * (1.0 / cfg.samples);
                     }
                     // average colors in subpixels
                     image[(cfg.height - h - 1) * cfg.width + w] += trace_color / cfg.subpixel / cfg.subpixel;
@@ -60,6 +57,8 @@ Vector3f* ray_tracing(scene &scene, renderCfg cfg)
 
 int main(int argc, char* argv[])
 {
+    srand((unsigned)time(0));
+
     if(argc != 2)
     {
         std::cout << "Usage: ray-tracing <scene_name>" << std::endl;

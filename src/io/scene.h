@@ -94,6 +94,10 @@ public:
         normal << all_objs[obj_id].f_normal[face_id];
     };
 
+    void get_obj_mat(int obj_id, material &mat)
+    {
+        mat = all_materials[all_objs[obj_id].mat_name];
+    };
 
 };
 
