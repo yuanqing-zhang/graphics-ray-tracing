@@ -8,7 +8,6 @@ using namespace Eigen;
 using namespace std;
 
 
-inline float clamp(float x){ return x < 0 ? 0 : x > 1 ? 1 : x; }
 inline int to_int(float x){ return int(pow(clamp(x), 1 / 2.2) * 255 + .5); }
 
 

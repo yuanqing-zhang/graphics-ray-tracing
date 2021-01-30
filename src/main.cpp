@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <ctime>
+#include <omp.h> //openMP
 
 #include "utils/ray.h"
 #include "io/scene.h"
@@ -23,7 +24,7 @@ Vector3f* ray_tracing(scene &scene, renderCfg cfg)
     {
         fprintf(stderr, "\r[LOG] Rendering (%d spp) %5.2f%%", 
                 cfg.samples * 4, 100. * h / (cfg.height - 1));
-        
+        #pragma omp parallel for
         for(int w = 0; w < cfg.width; w++)
         {
             for(int sh = 0; sh < cfg.subpixel; sh++)     // subpixel rows
@@ -33,12 +34,13 @@ Vector3f* ray_tracing(scene &scene, renderCfg cfg)
                     for(int s = 0; s < cfg.samples; s++)
                     {
                         // rand sample in [-1, 1]
-                        double dx= tent_filter(2 * rand_()); 
-                        double dy = tent_filter(2 * rand_());
+                        double dx= tent_filter(2 * drand48()); 
+                        double dy = tent_filter(2 * drand48());
 
                         Vector3f vec_dx = cfg.cx * (((sw + 0.5 + dx) / cfg.subpixel + w) / cfg.width - 0.5);
                         Vector3f vec_dy = cfg.cy * (((sh + 0.5 + dy) / cfg.subpixel + h) / cfg.height - 0.5);
                         Vector3f d = cfg.direction + vec_dx + vec_dy;
+                        d.normalize();
 
                         Ray ray(cfg.position, d);
                         trace_color += ray_tracing(scene, 
@@ -46,6 +48,8 @@ Vector3f* ray_tracing(scene &scene, renderCfg cfg)
                                                    cfg.depth) * (1.0 / cfg.samples);
                     }
                     // average colors in subpixels
+                    for(int t = 0; t < 3; t++)
+                        trace_color(t) = clamp(trace_color(t));
                     image[(cfg.height - h - 1) * cfg.width + w] += trace_color / cfg.subpixel / cfg.subpixel;
                 }
         }
@@ -57,8 +61,8 @@ Vector3f* ray_tracing(scene &scene, renderCfg cfg)
 
 int main(int argc, char* argv[])
 {
-    srand((unsigned)time(0));
 
+    srand48((long int)time(0));
     if(argc != 2)
     {
         std::cout << "Usage: ray-tracing <scene_name>" << std::endl;

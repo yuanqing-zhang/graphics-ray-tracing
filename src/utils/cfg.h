@@ -4,9 +4,6 @@
 #include <iostream>
 #include <Eigen/Dense>
 
-#define pi 3.1415926
-
-
 class renderCfg
 {
 public:
@@ -32,7 +29,7 @@ public:
         up.normalize();
 
         float z = 1.0;
-        float real_w = z * tan(f * 1.0 / 180 * pi);
+        float real_w = z * tan(f * 1.0 / 180 * M_PI);
         cx = direction.cross(up);
         cy = cx.cross(direction);
         
@@ -44,14 +41,14 @@ public:
 };
 
 renderCfg box_cfg = renderCfg(
-    Eigen::Vector3f(0, 0, 2.5),
+    Eigen::Vector3f(0, 0, 2.15),
     Eigen::Vector3f(0, 0, -1),
     Eigen::Vector3f(0, 1, 0),
     60,
-    256,
-    256,
-    5,
-    5,
+    100,
+    100,
+    50,
+    6,
     2
 );
 

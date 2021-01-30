@@ -19,11 +19,11 @@ inline vector<int> get_all_hit_box(scene &scene, Ray &ray)
 }
 
 
-inline int get_hit_face(scene &scene, Ray &ray, int obj_id, Vector3f &p)
+inline int get_hit_face(scene &scene, Ray &ray, int obj_id, float &t)
 {
     // intersection with all faces and return the nearest one
-    Vector3f curr_p = Vector3f(0, 0, 0); // current intersect point p
-    int face_id = -1;
+    float curr_t;
+    int face_id = -1; // -1 means not hit any face
 
     for(int f = 0; f < scene.all_objs[obj_id].fv_set.size(); f++)
     {
@@ -31,16 +31,17 @@ inline int get_hit_face(scene &scene, Ray &ray, int obj_id, Vector3f &p)
         scene.get_face_v(obj_id, f, A, B, C);
         scene.get_face_n(obj_id, f, normal);
 
-        if(ray.is_hit_triangle(A, B, C, normal, curr_p) && curr_p(2) > p(2))
+        if(ray.is_hit_triangle(A, B, C, normal, curr_t) && curr_t < t)
         {
-            face_id = f; p = curr_p;
+            face_id = f; t = curr_t;
         }
     }
     return face_id;
 }
 
 
-inline bool hit_scene(scene &scene, Ray &ray, Vector3f &hit_p, Vector3f &hit_n, material &hit_mat)
+inline bool hit_scene(scene &scene, Ray &ray, 
+                Vector3f &hit_p, Vector3f &hit_n, material &hit_mat)
 {
     // ray intersection with all AABBs
     vector<int> hit_ids = get_all_hit_box(scene, ray);
@@ -48,56 +49,62 @@ inline bool hit_scene(scene &scene, Ray &ray, Vector3f &hit_p, Vector3f &hit_n, 
     if(hit_ids.size() < 1) return false;
 
     bool is_hit = false;
-    hit_p = Vector3f(0, 0, -10000);
+    float hit_t = 100000.0;
+    int hit_obj, hit_face;
     for(int i = 0; i < hit_ids.size(); i++)
     {
         //暂时去掉球
         if(hit_ids[i] > 6) continue;
 
-        Vector3f p = Vector3f(0, 0, -10000);
-        int face_id = get_hit_face(scene, ray, hit_ids[i], p);
-        if(face_id >= 0 && p(2) > hit_p(2))
+        float t = 100000.0;
+        int face_id = get_hit_face(scene, ray, hit_ids[i], t);
+        if(face_id >= 0 && t < hit_t)
         {
-            is_hit = true;
-            hit_p = p;
-            scene.get_face_n(hit_ids[i], face_id, hit_n);
-            scene.get_obj_mat(hit_ids[i], hit_mat);
+            hit_t = t; is_hit = true; hit_obj = i; hit_face = face_id;
         }
     }
-
+    if(is_hit)
+    {
+        hit_p = ray.at(hit_t);
+        scene.get_face_n(hit_ids[hit_obj], hit_face, hit_n);
+        scene.get_obj_mat(hit_ids[hit_obj], hit_mat);
+    }
     return is_hit;
 }
 
 
-Vector3f ray_tracing(scene &scene, Ray &ray,
-                     int depth)
+Vector3f ray_tracing(scene &scene, Ray &ray, int depth)
 {
-    if(depth <= 0) return Vector3f(0, 0, 0);;
 
-    Vector3f hit_p = Vector3f(0, 0, 0);
-    Vector3f hit_n = Vector3f(0, 0, 0);
+    Vector3f hit_p, hit_n;
     material hit_mat;
-    if(hit_scene(scene, ray, hit_p, hit_n, hit_mat))
-    {
-        Vector3f diffuse = Vector3f(0, 0, 0);
-        Vector3f specular = Vector3f(0, 0, 0);
-        if(hit_mat.Kd.norm() > 1e-6)
-        {
-            Ray diff_ray(hit_p, get_random_diffuse(hit_p, hit_n));
-            Vector3f next_c = ray_tracing(scene, diff_ray, depth - 1);
-            diffuse = hit_mat.Kd.cwiseProduct(next_c);
-        }
-        if(hit_mat.Ks.norm() > 1e-6)
-        {
-            Ray spec_ray(hit_p, get_reflect(ray, hit_n));
-            Vector3f next_c = ray_tracing(scene, spec_ray, depth - 1);
-            specular = hit_mat.Ks.cwiseProduct(next_c);
-        }
-        return diffuse + specular + hit_mat.Le;
-    }
-
     // skybox color
     // float t = (ray.d(0) + 0.85) / 1.7;
-    // Vector3f bg_color = (1.0 - t) * Vector3f(1.0, 1.0, 1.0) + t * Vector3f(0.5, 0.7, 1.0);
-    return Vector3f(0, 0, 0);
+    // Vector3f bg_color = (1.0 - t) * Vector3f(1.0, 1.0, 1.0) 
+    //                                + t * Vector3f(0.5, 0.7, 1.0);
+    if(!hit_scene(scene, ray, hit_p, hit_n, hit_mat)) return Vector3f(0, 0, 0);
+
+    if(depth <= 0 && drand48() < 0.3) return hit_mat.Le;
+
+    Vector3f diffuse = Vector3f(0, 0, 0);
+    Vector3f specular = Vector3f(0, 0, 0);
+    float rand_r = -1;
+    if(hit_mat.Kd.norm() > 1e-6 && hit_mat.Ks.norm() > 1e-6)
+    {
+        rand_r = drand48();
+    }
+    if(hit_mat.Kd.norm() > 1e-6 && rand_r < 0.5)
+    {
+        Ray diff_ray(hit_p, get_random_diffuse(hit_n));
+        Vector3f next_d = ray_tracing(scene, diff_ray, depth - 1);
+        diffuse = hit_mat.Kd.cwiseProduct(next_d);
+    }
+    if(hit_mat.Ks.norm() > 1e-6 && (rand_r > 0.5 || rand_r == -1))
+    {
+        Ray spec_ray(hit_p, get_reflect(ray, hit_n));
+        Vector3f next_s = ray_tracing(scene, spec_ray, depth - 1);
+        specular = hit_mat.Ks.cwiseProduct(next_s);
+    }
+    return diffuse + specular + hit_mat.Le;
+
 }

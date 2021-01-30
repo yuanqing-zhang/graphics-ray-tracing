@@ -13,4 +13,4 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/raytracer RAYTRACER_SRC)
 add_library(raytracer SHARED ${RAYTRACER_SRC})
 
 add_executable(ray-tracing main.cpp)
-target_link_libraries(ray-tracing utils io raytracer)
+target_link_libraries(ray-tracing OpenMP::OpenMP_CXX utils io raytracer)
