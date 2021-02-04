@@ -63,12 +63,13 @@ int main(int argc, char* argv[])
 {
 
     srand48((long int)time(0));
-    if(argc != 2)
+    if(argc < 2)
     {
         std::cout << "Usage: ray-tracing <scene_name>" << std::endl;
         std:: cout << "scene_name can be (1)cornellbox, (2)car, (3)diningroom." << std::endl;
         return 1;
     }
+
 
     std::string scene_name = argv[1];
     

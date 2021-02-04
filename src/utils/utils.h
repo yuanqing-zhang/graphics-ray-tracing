@@ -12,9 +12,11 @@ double tent_filter(double x);
 
 float clamp(float x){ return x < 0 ? 0 : x > 1 ? 1 : x; }
 
-Eigen::Vector3f get_reflect(const Ray &ray, Eigen::Vector3f n)
+Eigen::Vector3f get_reflect(Eigen::Vector3f i, Eigen::Vector3f n)
 {
-    return ray.d - 2 * n.dot(ray.d) * n;
+    Eigen::Vector3f reflect = -i + 2 * n.dot(i) * n;
+    reflect.normalize();
+    return reflect;
 }
 
 Eigen::Vector3f get_random_diffuse(Eigen::Vector3f n)
@@ -32,6 +34,15 @@ Eigen::Vector3f get_random_diffuse(Eigen::Vector3f n)
                         n * sqrt(1 - r2);
     D.normalize();
     return D;
+}
+
+Eigen::Vector3f get_random_specular(Eigen::Vector3f i, Eigen::Vector3f n)
+{
+    Eigen::Vector3f reflect = get_reflect(i, n);
+    float radius = reflect.dot(n);
+    Eigen::Vector3f ray_d = reflect + get_random_diffuse(reflect) * radius;
+    ray_d.normalize();
+    return ray_d;
 }
 
 #endif

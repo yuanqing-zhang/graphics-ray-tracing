@@ -45,10 +45,10 @@ renderCfg box_cfg = renderCfg(
     Eigen::Vector3f(0, 0, -1),
     Eigen::Vector3f(0, 1, 0),
     60,
+    256,
+    256,
     100,
-    100,
-    50,
-    6,
+    10,
     2
 );
 
