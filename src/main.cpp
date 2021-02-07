@@ -16,7 +16,7 @@ using namespace Eigen;
 using namespace std;
 
 
-Vector3f* ray_tracing(scene &scene, renderCfg cfg)
+Vector3f* ray_tracing(Scene &scene, renderCfg cfg)
 {
     Vector3f* image = new Vector3f[cfg.width * cfg.height]; 
 
@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
 
     std::string scene_name = argv[1];
     
-    scene scene;
+    Scene scene;
     scene.load_scene(scene_name);
     cout << "[LOG] Finish load sence." << endl;
 

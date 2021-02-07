@@ -59,7 +59,16 @@ public:
 };
 
 
-class scene
+class light
+{
+public:
+    int obj_index;
+    Eigen::Vector3f Le;
+    light(){};
+};
+
+
+class Scene
 {
 public:
 
@@ -69,8 +78,9 @@ public:
 
     std::vector<obj> all_objs;
     std::map<std::string, material> all_materials;
+    std::vector<light> all_lights;
 
-    scene(){};
+    Scene(){};
     void load_scene(const std::string &scene_name);
     void load_mtl(const std::string &scene_name);
     

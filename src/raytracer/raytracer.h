@@ -5,7 +5,7 @@
 #include "../utils/ray.h"
 
 
-Eigen::Vector3f ray_tracing(scene &scene,
+Eigen::Vector3f ray_tracing(Scene &scene,
                             Ray &ray,
                             int depth);
 

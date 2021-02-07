@@ -1,8 +1,9 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
-#include "cfg.h"
 #include <Eigen/Dense>
+#include <cmath>
+#include "cfg.h"
 #include "ray.h"
 
 void save_image(Eigen::Vector3f* image, const std::string &scene_name, renderCfg cfg);
@@ -19,7 +20,7 @@ Eigen::Vector3f get_reflect(Eigen::Vector3f i, Eigen::Vector3f n)
     return reflect;
 }
 
-Eigen::Vector3f get_random_diffuse(Eigen::Vector3f n)
+Eigen::Vector3f get_cos_hemisphere_sample(Eigen::Vector3f n)
 {
     float r1 = 2 * M_PI * drand48(), r2 = drand48();
 
@@ -28,21 +29,37 @@ Eigen::Vector3f get_random_diffuse(Eigen::Vector3f n)
     U.normalize(); 
     Eigen::Vector3f V = n.cross(U);
     V.normalize();
-
+    // get cosine-weighted hemisphere lobe sample direction
     Eigen::Vector3f D = U * cos(r1) * sqrt(r2) + 
                         V * sin(r1) * sqrt(r2) + 
                         n * sqrt(1 - r2);
-    D.normalize();
     return D;
 }
 
-Eigen::Vector3f get_random_specular(Eigen::Vector3f i, Eigen::Vector3f n)
+Eigen::Vector3f get_spec_sample(Eigen::Vector3f in, Eigen::Vector3f n, float Ns)
 {
-    Eigen::Vector3f reflect = get_reflect(i, n);
-    float radius = reflect.dot(n);
-    Eigen::Vector3f ray_d = reflect + get_random_diffuse(reflect) * radius;
-    ray_d.normalize();
-    return ray_d;
+    Eigen::Vector3f reflect = get_reflect(in, n);
+
+    float r1 = 2 * M_PI * drand48(), r2 = 1 - pow(drand48(), 1.0 / (Ns + 1));
+    Eigen::Vector3f U = (fabs(reflect(0)) > .1 ? Eigen::Vector3f(0, 1, 0) : 
+                                Eigen::Vector3f(1, 0, 0)).cross(reflect);
+    U.normalize();
+    Eigen::Vector3f V = reflect.cross(U);
+    V.normalize();
+    Eigen::Vector3f D = U * cos(r1) * sqrt(r2) + 
+                        V * sin(r1) * sqrt(r2) + 
+                        reflect * sqrt(1 - r2);
+    D.normalize();
+    return D;
+
+}
+
+bool prob_samp_diffuse(Eigen::Vector3f Kd, Eigen::Vector3f Ks)
+{
+    float pkd = fmax(1e-6f, Kd.norm());
+    float pks = fmax(1e-6f, Ks.norm());
+    float p = drand48();
+    return p < (pkd / (pkd + pks));
 }
 
 #endif

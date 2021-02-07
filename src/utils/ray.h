@@ -17,7 +17,7 @@ public:
     bool is_hit_bbox(AABB &bbox)
     {
         // slab method
-        float t_min = 1e-6f;
+        float t_min = 1e-3f;
         float t_max = 100000.0;
 
         for(int i = 0; i < 3; i++)
@@ -48,9 +48,10 @@ public:
     {
         // find the intersection p
         if (fabsf(normal.dot(d)) < 1e-6f) return false; // paralell
+        if (normal.dot(d) > 1e-6f) return false; // back face
 
         t = (normal.dot(A) - normal.dot(o)) / (normal.dot(d));
-        if(t < 0) return false;
+        if(t < 1e-6f) return false;
         Eigen::Vector3f p = at(t);
 
         // check whether p in triangle

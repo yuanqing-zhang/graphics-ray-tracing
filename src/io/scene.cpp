@@ -1,6 +1,7 @@
 #include "scene.h"
 #include <fstream>
 #include <sstream>
+#include <string>
 
 using namespace Eigen;
 using namespace std;
@@ -11,7 +12,7 @@ bool is_line_valid(const string &line) {
 }
 
 
-void scene::load_mtl(const string &mtl_name)
+void Scene::load_mtl(const string &mtl_name)
 {
     fstream f;
     string line, type, mat_name;
@@ -71,7 +72,7 @@ void scene::load_mtl(const string &mtl_name)
 }
 
 
-void scene::load_scene(const string &scene_name)
+void Scene::load_scene(const string &scene_name)
 {
     fstream f;
     string line, type, mtl_name;
@@ -80,6 +81,7 @@ void scene::load_scene(const string &scene_name)
     float v1, v2, v3;
     int i1, i2, i3;
     Vector3i fv, fn, ft;
+    string mat_name;
 
     // open obj file and check 
     string scene_dir = "../example-scenes/" + scene_name + "/";
@@ -107,6 +109,7 @@ void scene::load_scene(const string &scene_name)
         {
             instream >> v1 >> v2 >> v3;
             v_mat.push_back(Vector3f(v1, v2, v3));
+            // create if read light
         }
         else if(type == "vn" || type == "VN") 
         {
@@ -132,7 +135,15 @@ void scene::load_scene(const string &scene_name)
                 is_new_obj = false;
                 obj_index += 1;
             }
-            instream >> all_objs[obj_index].mat_name;
+            instream >> mat_name;
+            all_objs[obj_index].mat_name = mat_name;
+            if(mat_name.find("light")!= string::npos)
+            {
+                light l;
+                l.Le = all_materials[mat_name].Le;
+                l.obj_index = obj_index;
+                all_lights.push_back(l);
+            }
         }
         else if(type == "f" || type == "F")
         {

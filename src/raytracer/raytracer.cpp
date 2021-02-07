@@ -7,7 +7,7 @@ using namespace Eigen;
 using namespace std;
 
 
-inline vector<int> get_all_hit_box(scene &scene, Ray &ray)
+inline vector<int> get_all_hit_box(Scene &scene, Ray &ray)
 {
     vector<int> hit_ids;
     for(int i = 0; i < scene.all_objs.size(); i++)
@@ -19,10 +19,10 @@ inline vector<int> get_all_hit_box(scene &scene, Ray &ray)
 }
 
 
-inline int get_hit_face(scene &scene, Ray &ray, int obj_id, float &t)
+inline int get_hit_face(Scene &scene, Ray &ray, int obj_id, float &t)
 {
     // intersection with all faces and return the nearest one
-    float curr_t;
+    float curr_t = 1e-6f;
     int face_id = -1; // -1 means not hit any face
 
     for(int f = 0; f < scene.all_objs[obj_id].fv_set.size(); f++)
@@ -40,7 +40,7 @@ inline int get_hit_face(scene &scene, Ray &ray, int obj_id, float &t)
 }
 
 
-inline bool hit_scene(scene &scene, Ray &ray, 
+inline bool hit_scene(Scene &scene, Ray &ray, 
                 Vector3f &hit_p, Vector3f &hit_n, material &hit_mat)
 {
     // ray intersection with all AABBs
@@ -73,7 +73,7 @@ inline bool hit_scene(scene &scene, Ray &ray,
 }
 
 
-Vector3f ray_tracing(scene &scene, Ray &ray, int depth)
+Vector3f ray_tracing(Scene &scene, Ray &ray, int depth)
 {
 
     Vector3f hit_p, hit_n;
@@ -83,25 +83,26 @@ Vector3f ray_tracing(scene &scene, Ray &ray, int depth)
     // Vector3f bg_color = (1.0 - t) * Vector3f(1.0, 1.0, 1.0) 
     //                                + t * Vector3f(0.5, 0.7, 1.0);
     if(!hit_scene(scene, ray, hit_p, hit_n, hit_mat)) return Vector3f(0, 0, 0);
-
-    if(depth <= 0) return hit_mat.Le;
+    // return if depth < 0 or hit light
+    if(depth <= 0 || hit_mat.Le.norm() > 1e-6) return hit_mat.Le;
 
     Vector3f diffuse = Vector3f(0, 0, 0);
     Vector3f specular = Vector3f(0, 0, 0);
-    if(hit_mat.Kd.norm() > 1e-6)
+
+    bool is_diffuse = prob_samp_diffuse(hit_mat.Kd, hit_mat.Ks);
+    if(is_diffuse && hit_mat.Kd.norm() > 1e-6)
     {
-        Vector3f rand_norm = get_random_diffuse(hit_n);
-        Ray diff_ray(hit_p, rand_norm);
-        Vector3f next_d = ray_tracing(scene, diff_ray, depth - 1);
-        diffuse = (rand_norm.dot(hit_n)) * (hit_mat.Kd.cwiseProduct(next_d));
+        Vector3f sample_d = get_cos_hemisphere_sample(hit_n);
+        Ray diff_ray(hit_p, sample_d);
+        Vector3f next_c = ray_tracing(scene, diff_ray, depth - 1);
+        diffuse = (sample_d.dot(hit_n)) * (hit_mat.Kd.cwiseProduct(next_c));
     }
-    if(hit_mat.Ks.norm() > 1e-6)
+    else if(hit_mat.Ks.norm() > 1e-6)
     {
-        Vector3f rand_norm = get_random_specular(-ray.d, hit_n);
-        Ray spec_ray(hit_p, rand_norm);
-        Vector3f next_s = ray_tracing(scene, spec_ray, depth - 1);
-        float cos_ns = pow(get_reflect(rand_norm, hit_n).dot(-ray.d), hit_mat.Ns);
-        if(cos_ns > 0) specular = cos_ns * (hit_mat.Ks.cwiseProduct(next_s));
+        Vector3f sample_d = get_spec_sample(-ray.d, hit_n, hit_mat.Ns);
+        Ray diff_ray(hit_p, sample_d);
+        Vector3f next_c = ray_tracing(scene, diff_ray, depth - 1);
+        specular = (sample_d.dot(hit_n)) * (hit_mat.Ks.cwiseProduct(next_c)) ;
     }
     return diffuse + specular + hit_mat.Le;
 
