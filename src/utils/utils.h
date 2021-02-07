@@ -62,4 +62,13 @@ bool prob_samp_diffuse(Eigen::Vector3f Kd, Eigen::Vector3f Ks)
     return p < (pkd / (pkd + pks));
 }
 
+Eigen::Vector3f get_rect_sample(Eigen::Vector3f A, 
+                                Eigen::Vector3f B, 
+                                Eigen::Vector3f C)
+{
+    Eigen::Vector3f axis1 = A - B, axis2 = C - B;
+    float u = drand48(), v = drand48();
+    return B + u * axis1 + v * axis2;
+}
+
 #endif

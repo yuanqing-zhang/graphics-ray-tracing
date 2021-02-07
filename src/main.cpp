@@ -40,7 +40,6 @@ Vector3f* ray_tracing(Scene &scene, renderCfg cfg)
                         Vector3f vec_dx = cfg.cx * (((sw + 0.5 + dx) / cfg.subpixel + w) / cfg.width - 0.5);
                         Vector3f vec_dy = cfg.cy * (((sh + 0.5 + dy) / cfg.subpixel + h) / cfg.height - 0.5);
                         Vector3f d = cfg.direction + vec_dx + vec_dy;
-                        d.normalize();
 
                         Ray ray(cfg.position, d);
                         trace_color += ray_tracing(scene, 

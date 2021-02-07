@@ -19,7 +19,7 @@ inline vector<int> get_all_hit_box(Scene &scene, Ray &ray)
 }
 
 
-inline int get_hit_face(Scene &scene, Ray &ray, int obj_id, float &t)
+int get_hit_face(Scene &scene, Ray &ray, int obj_id, float &t)
 {
     // intersection with all faces and return the nearest one
     float curr_t = 1e-6f;
@@ -40,7 +40,7 @@ inline int get_hit_face(Scene &scene, Ray &ray, int obj_id, float &t)
 }
 
 
-inline bool hit_scene(Scene &scene, Ray &ray, 
+bool hit_scene(Scene &scene, Ray &ray, 
                 Vector3f &hit_p, Vector3f &hit_n, material &hit_mat)
 {
     // ray intersection with all AABBs
@@ -72,6 +72,27 @@ inline bool hit_scene(Scene &scene, Ray &ray,
     return is_hit;
 }
 
+vector<Ray> get_acess_light(Scene &scene, Vector3f hit_p)
+{
+    vector<Ray> light_rays;
+    Ray r_0;
+    for(int i = 0; i < scene.all_lights.size(); i++)
+    {
+        Vector3f A, B, C;
+        scene.get_face_v(scene.all_lights[i].obj_id, 0, A, B, C);
+        Vector3f o = get_rect_sample(A, B, C);
+        Ray r(o, hit_p - o);
+        // find light ray intersection
+        Vector3f r_p, r_n;
+        material r_mat;
+        if(hit_scene(scene, r, r_p, r_n, r_mat) && (r_p - hit_p).norm() < 0.001f)
+            light_rays.push_back(r);
+        else light_rays.push_back(r_0);
+    }
+    return light_rays;
+}
+
+
 
 Vector3f ray_tracing(Scene &scene, Ray &ray, int depth)
 {
@@ -86,10 +107,29 @@ Vector3f ray_tracing(Scene &scene, Ray &ray, int depth)
     // return if depth < 0 or hit light
     if(depth <= 0 || hit_mat.Le.norm() > 1e-6) return hit_mat.Le;
 
-    Vector3f diffuse = Vector3f(0, 0, 0);
-    Vector3f specular = Vector3f(0, 0, 0);
+    // direct illumination
+    vector<Ray> acc_ray = get_acess_light(scene, hit_p);
+    Vector3f direct_light = Vector3f(0, 0, 0);
+    for(int i = 0; i < acc_ray.size(); i++)
+    {
+        if(acc_ray[i].d.norm() > 1e-6f)
+        {
+            float dist = pow((acc_ray[i].o - hit_p).norm(), 2);
+            float A = scene.all_lights[i].w * scene.all_lights[i].h;
+            Vector3f n; scene.get_face_n(scene.all_lights[i].obj_id, 0, n);
+            Vector3f le = scene.all_lights[i].Le * (acc_ray[i].d.dot(n))/ (2 * M_PI * dist) * A;
+            Vector3f c_diff = (-acc_ray[i].d).dot(hit_n) * 
+                              (hit_mat.Kd.cwiseProduct(le));
+            Vector3f c_spec = (hit_mat.Ks.cwiseProduct(le)) *
+                    (pow((-ray.d).dot(get_reflect(-acc_ray[i].d, hit_n)), hit_mat.Ns));
 
+            direct_light += c_diff + c_spec;
+        }
+    }
+
+    Vector3f diffuse = Vector3f(0, 0, 0), specular = Vector3f(0, 0, 0);
     bool is_diffuse = prob_samp_diffuse(hit_mat.Kd, hit_mat.Ks);
+    // diffuse
     if(is_diffuse && hit_mat.Kd.norm() > 1e-6)
     {
         Vector3f sample_d = get_cos_hemisphere_sample(hit_n);
@@ -97,6 +137,7 @@ Vector3f ray_tracing(Scene &scene, Ray &ray, int depth)
         Vector3f next_c = ray_tracing(scene, diff_ray, depth - 1);
         diffuse = (sample_d.dot(hit_n)) * (hit_mat.Kd.cwiseProduct(next_c));
     }
+    // specular
     else if(hit_mat.Ks.norm() > 1e-6)
     {
         Vector3f sample_d = get_spec_sample(-ray.d, hit_n, hit_mat.Ns);
@@ -104,6 +145,6 @@ Vector3f ray_tracing(Scene &scene, Ray &ray, int depth)
         Vector3f next_c = ray_tracing(scene, diff_ray, depth - 1);
         specular = (sample_d.dot(hit_n)) * (hit_mat.Ks.cwiseProduct(next_c)) ;
     }
-    return diffuse + specular + hit_mat.Le;
+    return direct_light + diffuse + specular + hit_mat.Le;
 
 }

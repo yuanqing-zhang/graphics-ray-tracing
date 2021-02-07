@@ -141,7 +141,7 @@ void Scene::load_scene(const string &scene_name)
             {
                 light l;
                 l.Le = all_materials[mat_name].Le;
-                l.obj_index = obj_index;
+                l.obj_id = obj_index;
                 all_lights.push_back(l);
             }
         }
@@ -215,6 +215,15 @@ void Scene::load_scene(const string &scene_name)
             all_objs[i].bbox.bbox_min(axis) = min;
             all_objs[i].bbox.bbox_max(axis) = max;
         }
+    }
+
+    // get light attr
+    for(int i = 0; i < all_lights.size(); i++)
+    {
+        Vector3f A, B, C;
+        get_face_v(all_lights[i].obj_id, 0, A, B, C);
+        all_lights[i].w = (A - B).norm();
+        all_lights[i].h = (C - B).norm();
     }
     
     cout << "[LOG] Total vertice: " << v_mat.size() 

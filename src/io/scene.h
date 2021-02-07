@@ -58,13 +58,14 @@ public:
     obj(){};
 };
 
-
+// area light(quad)
 class light
 {
 public:
-    int obj_index;
+    int obj_id;
+    float w, h;
     Eigen::Vector3f Le;
-    light(){};
+    light(){w = 0; h = 0; obj_id = -1;};
 };
 
 

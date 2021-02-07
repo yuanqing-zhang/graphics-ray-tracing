@@ -11,7 +11,8 @@ public:
     Eigen::Vector3f o; // origin
     Eigen::Vector3f d; // direction
 
-    Ray(Eigen::Vector3f _o, Eigen::Vector3f _d):o(_o), d(_d){};
+    Ray(){o = Eigen::Vector3f(0, 0, 0); d = Eigen::Vector3f(0, 0, 0);};
+    Ray(Eigen::Vector3f _o, Eigen::Vector3f _d):o(_o), d(_d){d.normalize();};
     Eigen::Vector3f at(float t){return o + t * d; };
 
     bool is_hit_bbox(AABB &bbox)
