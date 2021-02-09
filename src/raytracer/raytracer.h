@@ -3,7 +3,7 @@
 
 #include "../io/scene.h"
 #include "../utils/ray.h"
-
+#include "../io/bvh.h"
 
 Eigen::Vector3f ray_tracing(Scene &scene,
                             Ray &ray,

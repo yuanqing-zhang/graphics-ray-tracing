@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
     
     Scene scene;
     scene.load_scene(scene_name);
-    cout << "[LOG] Finish load sence." << endl;
+    scene.build_BVHs();
 
     Vector3f* image;
     if(scene_name == "cornellbox")

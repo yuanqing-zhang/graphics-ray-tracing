@@ -2,12 +2,13 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <numeric>
 
 using namespace Eigen;
 using namespace std;
 
 
-bool is_line_valid(const string &line) {
+inline bool is_line_valid(const string &line) {
 	return (line.empty() || line[0] == 13 || line[0] == '#');
 }
 
@@ -175,7 +176,7 @@ void Scene::load_scene(const string &scene_name)
                 sscanf(vt_str.c_str(), "%lu", &vt_id);
                 ft(i) = vt_id - 1;
 			}
-            all_objs[obj_index].fv_set.push_back(fv);
+            all_objs[obj_index].f_set.push_back(fv);
             all_objs[obj_index].fn_set.push_back(fn);
             all_objs[obj_index].ft_set.push_back(ft);
             
@@ -201,9 +202,9 @@ void Scene::load_scene(const string &scene_name)
         for(int axis = 0; axis < 3; axis++)
         {
             float min = 10000, max = -10000;
-            for(int f = 0; f < all_objs[i].fv_set.size(); f++)
+            for(int f = 0; f < all_objs[i].f_set.size(); f++)
             {
-                Vector3i curr_f = all_objs[i].fv_set[f];
+                Vector3i curr_f = all_objs[i].f_set[f];
                 for(int v = 0; v < 3; v++)
                 {
                     if(v_mat[curr_f[v]](axis) < min)
@@ -225,8 +226,24 @@ void Scene::load_scene(const string &scene_name)
         all_lights[i].w = (A - B).norm();
         all_lights[i].h = (C - B).norm();
     }
-    
+
     cout << "[LOG] Total vertice: " << v_mat.size() 
             << ", total objects:  " << all_objs.size() << endl;
+    
+
+    cout << "[LOG] Finish load sence." << endl;
 }
 
+
+void Scene::build_BVHs()
+{
+    // build BVH for all object
+    for(int i = 0; i < all_objs.size(); i++)
+    {
+        vector<int> all_f_id(all_objs[i].f_set.size());
+        iota(begin(all_f_id), end(all_f_id), 0);
+        all_objs[i].BVH = new BVH_node(v_mat, all_objs[i].f_set, 
+                                    all_f_id, all_objs[i].bbox, 0);
+    }
+    cout << "[LOG] Finish build BVH." << endl;
+}

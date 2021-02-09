@@ -7,7 +7,7 @@
 #include <Eigen/Dense>
 
 #include "../utils/AABB.h"
-
+#include "bvh.h"
 
 class material
 {
@@ -46,7 +46,7 @@ class obj
 // f v1[/vt1/vn1] v2[/vt2/vn2] v3[/vt3/vn3]
 public:
 
-    std::vector<Eigen::Vector3i> fv_set;  // index of vertices
+    std::vector<Eigen::Vector3i> f_set;  // index of vertices
     std::vector<Eigen::Vector3i> fn_set;  // index of normals
     std::vector<Eigen::Vector3i> ft_set;  // index of texture coordinates
 
@@ -54,8 +54,9 @@ public:
 
     std::string mat_name;
     AABB bbox;
+    BVH_node* BVH;
 
-    obj(){};
+    obj(){BVH = nullptr;};
 };
 
 // area light(quad)
@@ -84,6 +85,7 @@ public:
     Scene(){};
     void load_scene(const std::string &scene_name);
     void load_mtl(const std::string &scene_name);
+    void build_BVHs();
     
     
     // utils
@@ -93,9 +95,9 @@ public:
                     Eigen::Vector3f &B, 
                     Eigen::Vector3f &C)
     {
-        A << v_mat[all_objs[obj_id].fv_set[face_id](0)];
-        B << v_mat[all_objs[obj_id].fv_set[face_id](1)];
-        C << v_mat[all_objs[obj_id].fv_set[face_id](2)];
+        A << v_mat[all_objs[obj_id].f_set[face_id](0)];
+        B << v_mat[all_objs[obj_id].f_set[face_id](1)];
+        C << v_mat[all_objs[obj_id].f_set[face_id](2)];
     };
     
     void get_face_n(int obj_id, 
