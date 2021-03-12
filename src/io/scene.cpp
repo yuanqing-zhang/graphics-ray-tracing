@@ -1,8 +1,9 @@
-#include "scene.h"
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <numeric>
+
+#include "scene.h"
 
 using namespace Eigen;
 using namespace std;
@@ -13,13 +14,13 @@ inline bool is_line_valid(const string &line) {
 }
 
 
-void Scene::load_mtl(const string &mtl_name)
+void Scene::load_mtl(const string &scene_dir,const string &mtl_name)
 {
     fstream f;
-    string line, type, mat_name;
+    string line, type, mat_name, mat_Kd;
     float t1, t2, t3;
 
-    f.open(mtl_name, ios::in);
+    f.open(scene_dir + mtl_name, ios::in);
 	if(!f.is_open())
 	{
 		cout << "[ERROR] fail to open mtl file in " << mtl_name << endl;
@@ -40,7 +41,6 @@ void Scene::load_mtl(const string &mtl_name)
         }
         else if(type == "Ns"){instream >> all_materials[mat_name].Ns;}
         else if(type == "Ni"){instream >> all_materials[mat_name].Ni;}
-        else if(type == "map_Kd"){instream >> all_materials[mat_name].map_Kd;}
         else if(type == "Kd")
         {
             instream >> t1 >> t2 >> t3;
@@ -61,9 +61,21 @@ void Scene::load_mtl(const string &mtl_name)
             instream >> t1 >> t2 >> t3;
             all_materials[mat_name].Le = Vector3f(t1, t2, t3);
         }
+        else if(type == "map_Kd")
+        {
+            instream >> mat_Kd;
+            cv::Mat tex = cv::imread(scene_dir + mat_Kd, 1);
+            if(tex.data == nullptr)
+            {
+                cout <<"[ERROR] Unkonwn texture " << scene_dir + mat_Kd << endl;
+                assert(0);
+            }
+            tex.convertTo(tex, CV_32FC3, 1.0f / 255);
+            all_materials[mat_name].texture = tex;
+        }
         else
         {
-            cout << "[ERROR] unknown materials type " << type << 
+            cout << "[ERROR] Unknown materials type " << type << 
                     ", please check whether to update class material." << endl;
             assert(0);
         }
@@ -104,7 +116,7 @@ void Scene::load_scene(const string &scene_name)
         if(type == "mtllib") 
         {
             instream >> mtl_name;
-            load_mtl(scene_dir + mtl_name);
+            load_mtl(scene_dir, mtl_name);
         }
         else if(type == "v" || type == "V") 
         {
@@ -115,7 +127,9 @@ void Scene::load_scene(const string &scene_name)
         else if(type == "vn" || type == "VN") 
         {
             instream >> v1 >> v2 >> v3;
-            vn_mat.push_back(Vector3f(v1, v2, v3));
+            Vector3f vn = Vector3f(v1, v2, v3);
+            vn.normalize();
+            vn_mat.push_back(vn);
 
         }
         else if(type == "vt" || type == "VT") 
@@ -227,11 +241,12 @@ void Scene::load_scene(const string &scene_name)
         all_lights[i].h = (C - B).norm();
     }
 
+    // get emvironment map if in car scene
+    envir_map = cv::imread(scene_dir + "environment_day.hdr", -1);
+
+
     cout << "[LOG] Total vertice: " << v_mat.size() 
             << ", total objects:  " << all_objs.size() << endl;
-    
-
-    cout << "[LOG] Finish load sence." << endl;
 }
 
 
@@ -246,4 +261,5 @@ void Scene::build_BVHs()
                                     all_f_id, all_objs[i].bbox, 0);
     }
     cout << "[LOG] Finish build BVH." << endl;
+    cout << "[LOG] Finish load sence." << endl;
 }

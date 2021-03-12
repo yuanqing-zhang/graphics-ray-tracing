@@ -37,7 +37,7 @@ BVH_node::BVH_node(vector<Vector3f> &v_mat, vector<Vector3i> &f_set,
     // end recursion if only a few faces
     int f_size = f_id.size();
     assert(f_size > 0);
-    if(f_size <= 6)
+    if(f_size <= 10)
     {
         bbox = _bbox; face_id = f_id;
         l_child = nullptr; r_child = nullptr;

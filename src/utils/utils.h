@@ -2,6 +2,7 @@
 #define __UTILS_H__
 
 #include <Eigen/Dense>
+#include <opencv2/opencv.hpp>
 #include <cmath>
 #include "cfg.h"
 #include "ray.h"

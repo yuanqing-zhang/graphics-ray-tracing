@@ -32,7 +32,7 @@ public:
         float real_w = z * tan(f * 1.0 / 180 * M_PI);
         cx = direction.cross(up);
         cy = cx.cross(direction);
-        
+
         cx.normalize(); cy.normalize();
         cx = cx * real_w;
         cy = cy * real_w;
@@ -45,9 +45,9 @@ renderCfg box_cfg = renderCfg(
     Eigen::Vector3f(0, 0, -1),
     Eigen::Vector3f(0, 1, 0),
     60,
-    256,
-    256,
-    100,
+    500,
+    500,
+    400,
     6,
     2
 );

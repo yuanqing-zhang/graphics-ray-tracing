@@ -6,6 +6,7 @@
 
 using namespace Eigen;
 using namespace std;
+using namespace cv;
 
 
 inline int to_int(float x){ return int(pow(clamp(x), 1 / 2.2) * 255 + .5); }

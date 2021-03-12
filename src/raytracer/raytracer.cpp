@@ -1,5 +1,6 @@
 #include <iostream>
 #include <Eigen/Dense>
+
 #include "raytracer.h"
 #include "../utils/utils.h"
 
@@ -75,7 +76,6 @@ bool hit_scene(Scene &scene, Ray &ray,
     int hit_obj, hit_face;
     for(int i = 0; i < hit_ids.size(); i++)
     {
-        //暂时去掉球
         // if(hit_ids[i] > 6) continue;
 
         float t = 100000.0;
@@ -90,7 +90,8 @@ bool hit_scene(Scene &scene, Ray &ray,
     if(is_hit)
     {
         hit_p = ray.at(hit_t);
-        scene.get_face_n(hit_ids[hit_obj], hit_face, hit_n);
+        // scene.get_face_n(hit_ids[hit_obj], hit_face, hit_n);
+        scene.get_interp_n(hit_ids[hit_obj], hit_face, hit_p, hit_n);
         scene.get_obj_mat(hit_ids[hit_obj], hit_mat);
     }
     return is_hit;
@@ -124,10 +125,12 @@ Vector3f ray_tracing(Scene &scene, Ray &ray, int depth)
     Vector3f hit_p, hit_n;
     material hit_mat;
     // skybox color
-    // float t = (ray.d(0) + 0.85) / 1.7;
-    // Vector3f bg_color = (1.0 - t) * Vector3f(1.0, 1.0, 1.0) 
-    //                                + t * Vector3f(0.5, 0.7, 1.0);
-    if(!hit_scene(scene, ray, hit_p, hit_n, hit_mat)) return Vector3f(0, 0, 0);
+    if(!hit_scene(scene, ray, hit_p, hit_n, hit_mat))
+    {
+        if(scene.envir_map.data == nullptr)
+            return Vector3f(0, 0, 0);
+        return ray.get_envir_color(scene.envir_map);
+    }       
     // return if depth < 0 or hit light
     if(depth <= 0 || hit_mat.Le.norm() > 1e-6) return hit_mat.Le;
 
@@ -143,9 +146,9 @@ Vector3f ray_tracing(Scene &scene, Ray &ray, int depth)
             Vector3f n; scene.get_face_n(scene.all_lights[i].obj_id, 0, n);
             Vector3f le = scene.all_lights[i].Le * (acc_ray[i].d.dot(n))/ (2 * M_PI * dist) * A;
             Vector3f c_diff = (-acc_ray[i].d).dot(hit_n) * 
-                              (hit_mat.Kd.cwiseProduct(le));
+                                (hit_mat.Kd.cwiseProduct(le));
             Vector3f c_spec = (hit_mat.Ks.cwiseProduct(le)) *
-                    (pow((-ray.d).dot(get_reflect(-acc_ray[i].d, hit_n)), hit_mat.Ns));
+                                (pow((-ray.d).dot(get_reflect(-acc_ray[i].d, hit_n)), hit_mat.Ns));
 
             direct_light += c_diff + c_spec;
         }
@@ -169,6 +172,8 @@ Vector3f ray_tracing(Scene &scene, Ray &ray, int depth)
         Vector3f next_c = ray_tracing(scene, diff_ray, depth - 1);
         specular = (sample_d.dot(hit_n)) * (hit_mat.Ks.cwiseProduct(next_c)) ;
     }
+    //referaction
+
     return direct_light + diffuse + specular + hit_mat.Le;
 
 }

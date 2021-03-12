@@ -2,8 +2,9 @@
 #define __RAY_H__
 
 #include <Eigen/Dense>
-#include "AABB.h"
 #include <iostream>
+#include <opencv2/opencv.hpp>
+#include "AABB.h"
 
 class Ray
 {
@@ -61,6 +62,11 @@ public:
         if((A - C).cross(p - C).dot(normal) < 0) return false;
         return true;
     };
+
+    Eigen::Vector3f get_envir_color(cv::Mat envir_map)
+    {
+        //
+    }
 };
 
 #endif

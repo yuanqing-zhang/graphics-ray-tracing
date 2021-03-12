@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 
 
     std::string scene_name = argv[1];
-    
+
     Scene scene;
     scene.load_scene(scene_name);
     scene.build_BVHs();
@@ -81,6 +81,13 @@ int main(int argc, char* argv[])
     {
         clock_t start = clock();
         image = ray_tracing(scene, box_cfg);
+        cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC << endl;
+        save_image(image, scene_name, box_cfg);
+    }
+    if(scene_name == "car")
+    {
+        clock_t start = clock();
+        image = ray_tracing(scene, car_cfg1);
         cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC << endl;
         save_image(image, scene_name, box_cfg);
     }
