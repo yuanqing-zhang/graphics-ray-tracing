@@ -3,7 +3,6 @@
 #include <ctime>
 #include <omp.h> //openMP
 
-#include "utils/ray.h"
 #include "io/scene.h"
 #include "utils/cfg.h"
 #include "utils/utils.h"
@@ -74,7 +73,7 @@ int main(int argc, char* argv[])
 
     Scene scene;
     scene.load_scene(scene_name);
-    scene.build_BVHs();
+    scene.build_BVH();
 
     Vector3f* image;
     if(scene_name == "cornellbox")
@@ -84,13 +83,28 @@ int main(int argc, char* argv[])
         cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC << endl;
         save_image(image, scene_name, box_cfg);
     }
+    if(scene_name == "cornellbox2")
+    {
+        clock_t start = clock();
+        image = ray_tracing(scene, box_cfg2);
+        cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC << endl;
+        save_image(image, scene_name, box_cfg2);
+    }
     if(scene_name == "car")
     {
         clock_t start = clock();
         image = ray_tracing(scene, car_cfg1);
         cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC << endl;
-        save_image(image, scene_name, box_cfg);
+        save_image(image, scene_name, car_cfg1);
     }
+    if(scene_name == "diningroom")
+    {
+        clock_t start = clock();
+        image = ray_tracing(scene, room_cfg);
+        cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC << endl;
+        save_image(image, scene_name, room_cfg);
+    }
+
 
     return 0;
 

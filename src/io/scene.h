@@ -11,6 +11,8 @@
 #include "../utils/AABB.h"
 #include "bvh.h"
 
+
+
 class material
 {
 public:
@@ -84,10 +86,12 @@ public:
     std::vector<light> all_lights;
     cv::Mat envir_map;
 
-    Scene(){};
+    obj_BVH_node* obj_BVH;
+
+    Scene(){obj_BVH = nullptr;};
     void load_scene(const std::string &scene_name);
     void load_mtl(const std::string &scene_dir,const std::string &mtl_name);
-    void build_BVHs();
+    void build_BVH();
     
     
     // utils
@@ -111,6 +115,17 @@ public:
         B << vn_mat[all_objs[obj_id].fn_set[face_id](1)];
         C << vn_mat[all_objs[obj_id].fn_set[face_id](2)];
     };
+
+    void get_face_vt(int obj_id, 
+                     int face_id,
+                     Eigen::Vector2f &A, 
+                     Eigen::Vector2f &B, 
+                     Eigen::Vector2f &C)
+    {
+        A << vt_mat[all_objs[obj_id].ft_set[face_id](0)];
+        B << vt_mat[all_objs[obj_id].ft_set[face_id](1)];
+        C << vt_mat[all_objs[obj_id].ft_set[face_id](2)];
+    };
     
     void get_face_n(int obj_id, 
                     int face_id,
@@ -124,15 +139,18 @@ public:
         mat = all_materials[all_objs[obj_id].mat_name];
     };
 
-    void get_interp_n(int obj_id, 
-                      int face_id,
+    void get_n_tex(int obj_id, int face_id,
                       Eigen::Vector3f &hit_p,
-                      Eigen::Vector3f &normal)
+                      Eigen::Vector3f &normal,
+                      material &hit_mat,
+                      Eigen::Vector3f &tex_color)
     {
         Eigen::Vector3f A, B, C;
         get_face_v(obj_id, face_id, A, B, C);
         Eigen::Vector3f An, Bn, Cn;
         get_face_vn(obj_id, face_id, An, Bn, Cn);
+        Eigen::Vector2f At, Bt, Ct;
+        get_face_vt(obj_id, face_id, At, Bt, Ct);
 
         Eigen::Vector3f AB = B - A;
         Eigen::Vector3f AC = C - A;
@@ -140,16 +158,30 @@ public:
 
         float S_abc = (AB.cross(AC)).norm();
         float S_apc = (AP.cross(AC)).norm();
-        float S_apb = (AP.cross(AB)).norm();
+        float S_apb = (AB.cross(AP)).norm(); 
 
         float w1 = S_apc / S_abc;
         float w2 = S_apb / S_abc;
         normal = (1 - w1 - w2) * An + w1 * Bn + w2 * Cn;
+
+        Eigen::Vector2f uv = (1 - w1 - w2) * At + w1 * Bt + w2 * Ct;
+        tex_color = get_tex(hit_mat.texture, uv);
     };
 
-    void get_tex(std::string mat_name, Eigen::Vector2f vt)
-    {
+    float re_uv(float x){ x = x - floor(x); return x >= 1 ? 0.98 : x; }
 
+    Eigen::Vector3f get_tex(cv::Mat texture, Eigen::Vector2f uv)
+    {
+        if(texture.rows > 0)
+        {
+            int u = texture.rows * re_uv(uv[1]);
+            int v = texture.cols * re_uv(uv[0]);
+
+            cv::Vec3f pixel = texture.at<cv::Vec3f>(u, v);
+            return Eigen::Vector3f(pixel[2], pixel[0], pixel[1]);
+        }
+        else
+            return Eigen::Vector3f(0, 0, 0);
     };
 
 };

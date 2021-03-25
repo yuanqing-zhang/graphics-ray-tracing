@@ -4,6 +4,7 @@
 #include <numeric>
 
 #include "scene.h"
+// #include "../utils/utils.h"
 
 using namespace Eigen;
 using namespace std;
@@ -210,28 +211,6 @@ void Scene::load_scene(const string &scene_name)
     }
     f.close();
 
-    // calulate AABB for all objects
-    for(int i = 0; i < all_objs.size(); i++)
-    {
-        for(int axis = 0; axis < 3; axis++)
-        {
-            float min = 10000, max = -10000;
-            for(int f = 0; f < all_objs[i].f_set.size(); f++)
-            {
-                Vector3i curr_f = all_objs[i].f_set[f];
-                for(int v = 0; v < 3; v++)
-                {
-                    if(v_mat[curr_f[v]](axis) < min)
-                        min = v_mat[curr_f[v]](axis);
-                    if(v_mat[curr_f[v]](axis) > max)
-                        max = v_mat[curr_f[v]](axis);
-                }
-            }
-            all_objs[i].bbox.bbox_min(axis) = min;
-            all_objs[i].bbox.bbox_max(axis) = max;
-        }
-    }
-
     // get light attr
     for(int i = 0; i < all_lights.size(); i++)
     {
@@ -241,7 +220,7 @@ void Scene::load_scene(const string &scene_name)
         all_lights[i].h = (C - B).norm();
     }
 
-    // get emvironment map if in car scene
+    // get emvironment map if exist
     envir_map = cv::imread(scene_dir + "environment_day.hdr", -1);
 
 
@@ -250,16 +229,30 @@ void Scene::load_scene(const string &scene_name)
 }
 
 
-void Scene::build_BVHs()
+void Scene::build_BVH()
 {
     // build BVH for all object
     for(int i = 0; i < all_objs.size(); i++)
     {
+        // cout <<"obj" << i << " " << all_objs[i].f_set.size() << endl;
         vector<int> all_f_id(all_objs[i].f_set.size());
         iota(begin(all_f_id), end(all_f_id), 0);
         all_objs[i].BVH = new BVH_node(v_mat, all_objs[i].f_set, 
                                     all_f_id, all_objs[i].bbox, 0);
     }
+
+    // build BVH for scene
+    vector<AABB> all_bbox;
+    for(int i = 0; i < all_objs.size(); i++)
+    {
+        all_bbox.push_back(all_objs[i].bbox);
+    }
+    vector<int> all_obj_id(all_objs.size());
+    iota(begin(all_obj_id), end(all_obj_id), 0);
+
+    AABB root_bbox;
+    obj_BVH = new obj_BVH_node(all_bbox, all_obj_id, root_bbox, 0);
+    
     cout << "[LOG] Finish build BVH." << endl;
     cout << "[LOG] Finish load sence." << endl;
 }

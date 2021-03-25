@@ -19,7 +19,7 @@ public:
     bool is_hit_bbox(AABB &bbox)
     {
         // slab method
-        float t_min = 1e-3f;
+        float t_min = 1e-6f;
         float t_max = 100000.0;
 
         for(int i = 0; i < 3; i++)
@@ -48,11 +48,12 @@ public:
                          Eigen::Vector3f normal,
                          float &t)
     {
-        // find the intersection p
-        if (fabsf(normal.dot(d)) < 1e-6f) return false; // paralell
-        if (normal.dot(d) > 1e-6f) return false; // back face
+        float nd = normal.dot(d);
+        if (fabsf(normal.dot(d)) < 1e-3f) return false; // paralell
+        if (nd > 0) return false; // back face
 
-        t = (normal.dot(A) - normal.dot(o)) / (normal.dot(d));
+        // find the intersection p
+        t = (normal.dot(A) - normal.dot(o)) / nd;
         if(t < 1e-6f) return false;
         Eigen::Vector3f p = at(t);
 
@@ -61,11 +62,30 @@ public:
         if((C - B).cross(p - B).dot(normal) < 0) return false;
         if((A - C).cross(p - C).dot(normal) < 0) return false;
         return true;
-    };
+    }; 
 
-    Eigen::Vector3f get_envir_color(cv::Mat envir_map)
+    Eigen::Vector3f get_envir_color(cv::Mat &envir_map)
     {
-        //
+        // get intersection point
+        Eigen::Vector3f op = -o;
+        float rad = 500;
+        float b=op.dot(d);
+        float det = sqrt(b * b - op.dot(op) + rad * rad);
+        float t = b - det;
+        if(t < 0) t = b + det;
+        Eigen::Vector3f p = at(t);
+        p = p / rad;
+
+        // change to u, v
+        float theta = acos(-p(1));
+        float phi = atan2(-p(2), p(0)) + M_PI;
+
+        float u = envir_map.rows * (1 - theta / M_PI);
+        float v = envir_map.cols * (1 - phi / (2 * M_PI));
+
+        cv::Vec3f pixel = envir_map.at<cv::Vec3f>(u, v);
+        Eigen::Vector3f envir_color(pixel[0], pixel[1], pixel[2]);
+        return envir_color;
     }
 };
 
