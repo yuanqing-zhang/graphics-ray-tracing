@@ -15,7 +15,7 @@ using namespace Eigen;
 using namespace std;
 
 
-Vector3f* ray_tracing(Scene &scene, renderCfg cfg)
+void ray_tracing(Scene &scene, string scene_name, renderCfg cfg)
 {
     Vector3f* image = new Vector3f[cfg.width * cfg.height]; 
 
@@ -51,9 +51,12 @@ Vector3f* ray_tracing(Scene &scene, renderCfg cfg)
                     image[(cfg.height - h - 1) * cfg.width + w] += trace_color / cfg.subpixel / cfg.subpixel;
                 }
         }
+        // if(h % 10 == 9)
+        //     save_image(image, scene_name + to_string(h), cfg);
+
     }
     cout << endl;
-    return image;
+    save_image(image, scene_name, cfg);
 }
 
 
@@ -79,30 +82,20 @@ int main(int argc, char* argv[])
     if(scene_name == "cornellbox")
     {
         clock_t start = clock();
-        image = ray_tracing(scene, box_cfg);
+        ray_tracing(scene, scene_name, box_cfg);
         cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC << endl;
-        save_image(image, scene_name, box_cfg);
-    }
-    if(scene_name == "cornellbox2")
-    {
-        clock_t start = clock();
-        image = ray_tracing(scene, box_cfg2);
-        cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC << endl;
-        save_image(image, scene_name, box_cfg2);
     }
     if(scene_name == "car")
     {
         clock_t start = clock();
-        image = ray_tracing(scene, car_cfg1);
+        ray_tracing(scene, scene_name, car_cfg1);
         cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC << endl;
-        save_image(image, scene_name, car_cfg1);
     }
     if(scene_name == "diningroom")
     {
         clock_t start = clock();
-        image = ray_tracing(scene, room_cfg);
+        ray_tracing(scene, scene_name, room_cfg);
         cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC << endl;
-        save_image(image, scene_name, room_cfg);
     }
 
 

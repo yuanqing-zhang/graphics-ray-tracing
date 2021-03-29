@@ -156,7 +156,7 @@ Vector3f ray_tracing(Scene &scene, Ray &ray, int depth)
             Vector3f n; scene.get_face_n(scene.all_lights[i].obj_id, 0, n);
             Vector3f le = scene.all_lights[i].Le * (acc_ray[i].d.dot(n))/ (2 * M_PI * dist) * A;
             Vector3f c_diff = (-acc_ray[i].d).dot(hit_n) * 
-                                (hit_mat.Kd.cwiseProduct(le));
+                                ((hit_mat.Kd + tex_color).cwiseProduct(le));
             Vector3f c_spec = (hit_mat.Ks.cwiseProduct(le)) *
                                 (pow((-ray.d).dot(get_reflect(-acc_ray[i].d, hit_n)), hit_mat.Ns));
 
@@ -173,7 +173,7 @@ Vector3f ray_tracing(Scene &scene, Ray &ray, int depth)
         Vector3f sample_d = get_cos_hemisphere_sample(hit_n);
         Ray diff_ray(hit_p, sample_d);
         Vector3f next_c = ray_tracing(scene, diff_ray, depth - 1);
-        diffuse = (sample_d.dot(hit_n)) * (hit_mat.Kd.cwiseProduct(next_c));
+        diffuse = (sample_d.dot(hit_n)) * ((hit_mat.Kd + tex_color).cwiseProduct(next_c));
     }
     // specular
     else if(hit_mat.Ks.norm() > 1e-6)
@@ -181,10 +181,10 @@ Vector3f ray_tracing(Scene &scene, Ray &ray, int depth)
         Vector3f sample_d = get_spec_sample(-ray.d, hit_n, hit_mat.Ns);
         Ray diff_ray(hit_p, sample_d);
         Vector3f next_c = ray_tracing(scene, diff_ray, depth - 1);
-        specular += hit_mat.Ks.cwiseProduct(next_c);
+        specular += (hit_mat.Ks + tex_color).cwiseProduct(next_c);
     }
 
     // mix color and texture
-    return direct_light + diffuse + specular + hit_mat.Le + tex_color;
+    return direct_light + diffuse + specular + hit_mat.Le;
 
 }

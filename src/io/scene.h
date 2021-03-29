@@ -178,7 +178,7 @@ public:
             int v = texture.cols * re_uv(uv[0]);
 
             cv::Vec3f pixel = texture.at<cv::Vec3f>(u, v);
-            return Eigen::Vector3f(pixel[2], pixel[0], pixel[1]);
+            return Eigen::Vector3f(pixel[2], pixel[1], pixel[0]);
         }
         else
             return Eigen::Vector3f(0, 0, 0);

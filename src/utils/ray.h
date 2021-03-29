@@ -68,7 +68,7 @@ public:
     {
         // get intersection point
         Eigen::Vector3f op = -o;
-        float rad = 500;
+        float rad = 1200;
         float b=op.dot(d);
         float det = sqrt(b * b - op.dot(op) + rad * rad);
         float t = b - det;

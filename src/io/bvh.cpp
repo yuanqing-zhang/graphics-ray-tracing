@@ -14,7 +14,7 @@ BVH_node::BVH_node(vector<Vector3f> &v_mat, vector<Vector3i> &f_set,
     int f_size = f_id.size();
     // cout << f_size << endl;
     assert(f_size > 0);
-    if(f_size <= 10)
+    if(f_size <= 5)
     {
         _bbox = comp_fs_bbox(v_mat, f_set, f_id);
         bbox = _bbox; face_id = f_id;
@@ -41,8 +41,8 @@ BVH_node::BVH_node(vector<Vector3f> &v_mat, vector<Vector3i> &f_set,
     for(int i = 0; i < f_size; i++)
     {
         float curr = v_mat[f_set[f_id[i]][0]][dimension];
-        if(curr - avg_d > 1e-4f) l_f_id_set.push_back(f_id[i]);
-        else if (avg_d - curr > 1e-4f) r_f_id_set.push_back(f_id[i]);
+        if(curr - avg_d > 1e-3f) l_f_id_set.push_back(f_id[i]);
+        else if (avg_d - curr > 1e-3f) r_f_id_set.push_back(f_id[i]);
         else
         {
             if(l_f_id_set.size() < r_f_id_set.size())

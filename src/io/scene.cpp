@@ -221,8 +221,10 @@ void Scene::load_scene(const string &scene_name)
     }
 
     // get emvironment map if exist
-    envir_map = cv::imread(scene_dir + "environment_day.hdr", -1);
-
+    if(scene_name == "car")
+        envir_map = cv::imread(scene_dir + "environment_dusk.hdr", -1);
+    if(scene_name == "diningroom")
+        envir_map = cv::imread(scene_dir + "environment.hdr", -1);
 
     cout << "[LOG] Total vertice: " << v_mat.size() 
             << ", total objects:  " << all_objs.size() << endl;
