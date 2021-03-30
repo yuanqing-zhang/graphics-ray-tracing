@@ -51,8 +51,8 @@ void ray_tracing(Scene &scene, string scene_name, renderCfg cfg)
                     image[(cfg.height - h - 1) * cfg.width + w] += trace_color / cfg.subpixel / cfg.subpixel;
                 }
         }
-        // if(h % 10 == 9)
-        //     save_image(image, scene_name + to_string(h), cfg);
+        if(h % 20 == 0)
+            save_image(image, scene_name + to_string(h), cfg);
 
     }
     cout << endl;
@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
     if(scene_name == "car")
     {
         clock_t start = clock();
-        ray_tracing(scene, scene_name, car_cfg1);
+        ray_tracing(scene, scene_name, car_cfg);
         cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC << endl;
     }
     if(scene_name == "diningroom")
