@@ -181,7 +181,7 @@ public:
             return Eigen::Vector3f(pixel[2], pixel[1], pixel[0]);
         }
         else
-            return Eigen::Vector3f(0, 0, 0);
+            return Eigen::Vector3f(1, 1, 1);
     };
 
 };
