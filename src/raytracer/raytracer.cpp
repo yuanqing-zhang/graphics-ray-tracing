@@ -182,7 +182,8 @@ Vector3f ray_tracing(Scene &scene, Ray &ray, int depth)
         Vector3f sample_d = get_spec_sample(-ray.d, hit_n, hit_mat.Ns);
         Ray diff_ray(hit_p, sample_d);
         Vector3f next_c = ray_tracing(scene, diff_ray, depth - 1);
-        specular += (hit_mat.Ks).cwiseProduct(next_c);
+        specular += (hit_mat.Ks).cwiseProduct(next_c) * 
+                        (pow((sample_d).dot(get_reflect(-ray.d, hit_n)), hit_mat.Ns));
     }
 
     // mix color and texture

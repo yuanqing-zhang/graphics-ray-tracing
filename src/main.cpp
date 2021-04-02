@@ -46,8 +46,6 @@ void ray_tracing(Scene &scene, string scene_name, renderCfg cfg)
                                                    cfg.depth) * (1.0 / cfg.samples);
                     }
                     // average colors in subpixels
-                    for(int t = 0; t < 3; t++)
-                        trace_color(t) = clamp(trace_color(t));
                     image[(cfg.height - h - 1) * cfg.width + w] += trace_color / cfg.subpixel / cfg.subpixel;
                 }
         }

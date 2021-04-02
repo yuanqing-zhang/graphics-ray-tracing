@@ -35,7 +35,7 @@ public:
 
         cx.normalize(); cy.normalize();
         cx = cx * real_w;
-        cy = cy * real_w;
+        cy = cy * real_w * h / w;
     };
 
 };
@@ -45,34 +45,46 @@ renderCfg box_cfg = renderCfg(
     Eigen::Vector3f(0, 0, -1),
     Eigen::Vector3f(0, 1, 0),
     60,
+    500,
+    500,
     200,
-    200,
-    5,
     5,
     2
 );
 
+// renderCfg car_cfg = renderCfg(
+//     Eigen::Vector3f(5.72, 0.12, 9.55),
+//     Eigen::Vector3f(-5.085, -0.131, -8.819),
+//     Eigen::Vector3f( -0.165, 0.968, -0.189),
+//     45,
+//     200,
+//     100,
+//     5,
+//     5,
+//     2
+// );
+
 renderCfg car_cfg = renderCfg(
-    Eigen::Vector3f(12.220, 0.0, 13.800),
-    Eigen::Vector3f(-1.0, 0.0, -1.0),
-    Eigen::Vector3f(-0.065,  0.996,  0.065),
+    Eigen::Vector3f(8.22, -0.61, -13.80),
+    Eigen::Vector3f(-7.14, -0.702, 9.097),
+    Eigen::Vector3f(-0.065, 0.996, 0.065),
     45,
-    500,
-    500,
+    600,
+    400,
     200,
-    5,
+    4,
     2
 );
 
 renderCfg room_cfg = renderCfg(
-    Eigen::Vector3f(0.000, 20.0, 30.0),
-    Eigen::Vector3f(0.000, -1.00, -2.00),
+    Eigen::Vector3f( 0.000, 17.720, 31.850),
+    Eigen::Vector3f(0.000, -12.546, -30.865),
     Eigen::Vector3f(0.000,  0.985, -0.174),
     60,
-    600,
-    600,
-    200,
-    5,
+    150,
+    100,
+    1,
+    4,
     2
 );
 

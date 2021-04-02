@@ -1,6 +1,7 @@
 #ifndef __RAY_H__
 #define __RAY_H__
 
+#include <cmath>
 #include <Eigen/Dense>
 #include <iostream>
 #include <opencv2/opencv.hpp>
@@ -81,10 +82,11 @@ public:
         float phi = atan2(-p(2), p(0)) + M_PI;
 
         float u = envir_map.rows * (1 - theta / M_PI);
-        float v = envir_map.cols * (1 - phi / (2 * M_PI));
+        float v = phi / (2 * M_PI) - 0.8;
+        v = envir_map.cols * (1 - (v - floor(v)));
 
         cv::Vec3f pixel = envir_map.at<cv::Vec3f>(u, v);
-        Eigen::Vector3f envir_color(pixel[0], pixel[1], pixel[2]);
+        Eigen::Vector3f envir_color(pixel[2], pixel[1], pixel[0]);
         return envir_color;
     }
 };
