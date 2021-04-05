@@ -225,6 +225,7 @@ void Scene::load_scene(const string &scene_name)
         envir_map = cv::imread(scene_dir + "environment_day.hdr", -1);
     if(scene_name == "diningroom")
         envir_map = cv::imread(scene_dir + "environment.hdr", -1);
+    cout << "[LOG] Emvironment map cols: " <<  envir_map.cols << endl;
 
     cout << "[LOG] Total vertice: " << v_mat.size() 
             << ", total objects:  " << all_objs.size() << endl;
@@ -240,7 +241,7 @@ void Scene::build_BVH()
         vector<int> all_f_id(all_objs[i].f_set.size());
         iota(begin(all_f_id), end(all_f_id), 0);
         all_objs[i].BVH = new BVH_node(v_mat, all_objs[i].f_set, 
-                                    all_f_id, all_objs[i].bbox, 0);
+                                    all_f_id, all_objs[i].bbox);
     }
 
     // build BVH for scene

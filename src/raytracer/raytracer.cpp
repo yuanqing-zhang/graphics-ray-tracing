@@ -164,7 +164,6 @@ Vector3f ray_tracing(Scene &scene, Ray &ray, int depth)
         }
     }
 
-    // return direct_light;
     Vector3f diffuse = Vector3f(0, 0, 0), specular = Vector3f(0, 0, 0);
     bool is_diffuse = prob_samp_diffuse(hit_mat.Kd, hit_mat.Ks);
     // diffuse

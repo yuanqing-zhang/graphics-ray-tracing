@@ -20,6 +20,7 @@ void ray_tracing(Scene &scene, string scene_name, renderCfg cfg)
     Vector3f* image = new Vector3f[cfg.width * cfg.height]; 
 
     for (int h = 0; h < cfg.height; h++)
+    // for(int h = 79; h >= 0; h--)
     {
         fprintf(stderr, "\r[LOG] Rendering (%d spp) %5.2f%%", 
                 cfg.samples * 4, 100. * h / (cfg.height - 1));
@@ -81,19 +82,19 @@ int main(int argc, char* argv[])
     {
         clock_t start = clock();
         ray_tracing(scene, scene_name, box_cfg);
-        cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC << endl;
+        cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC / 60.0 << endl;
     }
     if(scene_name == "car")
     {
         clock_t start = clock();
         ray_tracing(scene, scene_name, car_cfg);
-        cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC << endl;
+        cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC / 60.0 << endl;
     }
     if(scene_name == "diningroom")
     {
         clock_t start = clock();
         ray_tracing(scene, scene_name, room_cfg);
-        cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC << endl;
+        cout << "[LOG] Rendering time: " << (double)(clock() - start) / CLOCKS_PER_SEC / 60.0 << endl;
     }
 
 

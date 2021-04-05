@@ -50,11 +50,11 @@ public:
                          float &t)
     {
         float nd = normal.dot(d);
-        if (fabsf(normal.dot(d)) < 1e-3f) return false; // paralell
+        if (fabsf(nd) < 1e-6f) return false; // paralell
         if (nd > 0) return false; // back face
 
         // find the intersection p
-        t = (normal.dot(A) - normal.dot(o)) / nd;
+        t = (normal.dot(B) - normal.dot(o)) / nd;
         if(t < 1e-6f) return false;
         Eigen::Vector3f p = at(t);
 
@@ -81,9 +81,11 @@ public:
         float theta = acos(-p(1));
         float phi = atan2(-p(2), p(0)) + M_PI;
 
+        // float u = envir_map.rows * (1 - theta / M_PI);
+        // float v = phi / (2 * M_PI) - 0.8;
+        // v = envir_map.cols * (1 - (v - floor(v)));
         float u = envir_map.rows * (1 - theta / M_PI);
-        float v = phi / (2 * M_PI) - 0.8;
-        v = envir_map.cols * (1 - (v - floor(v)));
+        float v = envir_map.rows * (1 - phi / (2 * M_PI));
 
         cv::Vec3f pixel = envir_map.at<cv::Vec3f>(u, v);
         Eigen::Vector3f envir_color(pixel[2], pixel[1], pixel[0]);

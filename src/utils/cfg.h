@@ -45,9 +45,9 @@ renderCfg box_cfg = renderCfg(
     Eigen::Vector3f(0, 0, -1),
     Eigen::Vector3f(0, 1, 0),
     60,
-    500,
-    500,
-    200,
+    300,
+    300,
+    5,
     5,
     2
 );
@@ -72,18 +72,21 @@ renderCfg car_cfg = renderCfg(
     600,
     400,
     200,
-    4,
+    3,
     2
 );
 
 renderCfg room_cfg = renderCfg(
-    Eigen::Vector3f( 0.000, 17.720, 31.850),
-    Eigen::Vector3f(0.000, -12.546, -30.865),
+    Eigen::Vector3f( 0.000, 15.720, 26.850),
+    Eigen::Vector3f(0.000, -12.546, -41.865),
     Eigen::Vector3f(0.000,  0.985, -0.174),
     60,
-    150,
-    100,
-    1,
+    600,
+    400,
+    200,
+    // 150,
+    // 100,
+    // 1,
     4,
     2
 );

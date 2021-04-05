@@ -17,7 +17,7 @@ public:
     BVH_node(std::vector<Eigen::Vector3f> &v_mat,
                 std::vector<Eigen::Vector3i> &f_set,
                 std::vector<int> f_id,
-                AABB &_bbox, int dimension);
+                AABB &_bbox);
 };
 
 

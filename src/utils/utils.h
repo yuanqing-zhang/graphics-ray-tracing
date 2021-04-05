@@ -123,8 +123,8 @@ AABB comp_fs_bbox(std::vector<Eigen::Vector3f> &v_mat,
                     max = v_mat[curr_f[v]](axis);
             }
         }
-        bbox.bbox_min(axis) = min;
-        bbox.bbox_max(axis) = max;
+        bbox.bbox_min(axis) = min - 1e-6f;
+        bbox.bbox_max(axis) = max + 1e-6f;
     }
     return bbox;
 }
@@ -133,12 +133,11 @@ AABB comp_fs_bbox(std::vector<Eigen::Vector3f> &v_mat,
 AABB merge_bbox(AABB &a, AABB &b)
 {
     AABB merge;
-    merge.bbox_min[0] = fmin(a.bbox_min[0], b.bbox_min[0]);
-    merge.bbox_min[1] = fmin(a.bbox_min[1], b.bbox_min[1]);
-    merge.bbox_min[2] = fmin(a.bbox_min[2], b.bbox_min[2]);
-    merge.bbox_max[0] = fmax(a.bbox_max[0], b.bbox_max[0]);
-    merge.bbox_max[1] = fmax(a.bbox_max[1], b.bbox_max[1]);
-    merge.bbox_max[2] = fmax(a.bbox_max[2], b.bbox_max[2]);
+    for(int axis = 0; axis < 3; axis++)
+    {
+        merge.bbox_min[axis] = fmin(a.bbox_min[axis], b.bbox_min[axis]);
+        merge.bbox_max[axis] = fmax(a.bbox_max[axis], b.bbox_max[axis]);
+    }
     return merge;
 }
 
